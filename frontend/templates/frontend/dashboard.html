@@ -1,0 +1,245 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<div class="page-head">
+    <h1 class="mb-1">Dashboard</h1>
+    <p class="page-subtitle">An overview of your team's workload today.</p>
+</div>
+
+<div class="row g-3 stat-row">
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:0">
+            <div class="card-body">
+                <span class="stat-icon icon-slate"><i class="bi bi-people"></i></span>
+                <h5>Total Employees</h5>
+                <h2 class="stat-value" data-count="{{ total_employees }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:1">
+            <div class="card-body">
+                <span class="stat-icon icon-umber"><i class="bi bi-list-task"></i></span>
+                <h5>Total Tasks</h5>
+                <h2 class="stat-value" data-count="{{ total_tasks }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:2">
+            <div class="card-body">
+                <span class="stat-icon icon-amber"><i class="bi bi-hourglass-split"></i></span>
+                <h5>Pending Tasks</h5>
+                <h2 class="stat-value" data-count="{{ pending_tasks }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:3">
+            <div class="card-body">
+                <span class="stat-icon icon-sage"><i class="bi bi-check2-circle"></i></span>
+                <h5>Completed Tasks</h5>
+                <h2 class="stat-value" data-count="{{ completed_tasks }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:4">
+            <div class="card-body">
+                <span class="stat-icon icon-slate"><i class="bi bi-person-check"></i></span>
+                <h5>Available Employees</h5>
+                <h2 class="stat-value" data-count="{{ available_employees }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+        <div class="card stat-card" style="--delay:5">
+            <div class="card-body">
+                <span class="stat-icon icon-teal"><i class="bi bi-arrow-repeat"></i></span>
+                <h5>In Progress Tasks</h5>
+                <h2 class="stat-value" data-count="{{ in_progress_tasks }}">0</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-3 mt-2">
+
+    <!-- Pie Chart -->
+    <div class="col-md-6">
+        <div class="card chart-card p-3">
+            <h5 class="mb-3">Task Status</h5>
+            <div class="chart-card-body">
+                <canvas id="taskChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="col-md-6">
+        <div class="card chart-card p-3">
+            <h5 class="mb-3">Employee Workload</h5>
+            <div class="chart-card-body">
+                <canvas id="employeeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-3 mt-2">
+
+    <div class="col-md-6">
+        <div class="card data-card">
+            <div class="card-header">Recent Tasks</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in recent_tasks %}
+                        <tr>
+                            <td>{{ task.title }}</td>
+                            <td><span class="status-pill status-{{ task.status|lower }}">{{ task.status }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="empty-row">No tasks yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card data-card">
+            <div class="card-header">Top Employees</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tasks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in top_employees %}
+                        <tr>
+                            <td>{{ employee.full_name }}</td>
+                            <td>{{ employee.current_task_count }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="empty-row">No employees yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function themeColor(varName, fallback) {
+        const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        return v || fallback;
+    }
+    function chartTextColor() { return themeColor('--text-muted', '#8A8478'); }
+    function chartGridColor() { return themeColor('--chart-grid', 'rgba(150,140,120,.15)'); }
+
+    const taskCtx = document.getElementById('taskChart');
+    const empCtx  = document.getElementById('employeeChart');
+
+    // muted, earthy chart palette to match the Slate / Travertine theme
+    const COLOR_PENDING   = '#C98A3E'; // warm amber
+    const COLOR_PROGRESS  = '#4A8C82'; // soft teal
+    const COLOR_COMPLETED = '#6B9B6E'; // sage green
+    const COLOR_BAR       = '#8C5A3C'; // warm bronze accent
+
+    const taskChart = new Chart(taskCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ task_chart_labels|safe }},
+            datasets: [{
+                data: {{ task_chart_data|safe }},
+                backgroundColor: [COLOR_PENDING, COLOR_PROGRESS, COLOR_COMPLETED],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            animation: { duration: 700, easing: 'easeOutQuart' },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: chartTextColor(), usePointStyle: true, boxWidth: 8, font: { family: 'Inter' } }
+                }
+            }
+        }
+    });
+
+    const empChart = new Chart(empCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ employee_chart_labels|safe }},
+            datasets: [{
+                label: 'Tasks Assigned',
+                data: {{ employee_chart_data|safe }},
+                backgroundColor: COLOR_BAR,
+                borderRadius: 8,
+                maxBarThickness: 48
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            animation: { duration: 700, easing: 'easeOutQuart' },
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: chartTextColor() }, grid: { color: chartGridColor() } },
+                x: { ticks: { color: chartTextColor() }, grid: { display: false } }
+            }
+        }
+    });
+
+    document.addEventListener('td-theme-change', () => {
+        const color = chartTextColor();
+        const grid  = chartGridColor();
+        taskChart.options.plugins.legend.labels.color = color;
+        empChart.options.scales.y.ticks.color = color;
+        empChart.options.scales.x.ticks.color = color;
+        empChart.options.scales.y.grid.color = grid;
+        taskChart.update();
+        empChart.update();
+    });
+
+    // ---- animated count-up for stat numbers ----
+    document.querySelectorAll('.stat-value').forEach(el => {
+        const target = parseInt(el.dataset.count, 10) || 0;
+        const duration = 800;
+        const start = performance.now();
+        function tick(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(eased * target);
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    });
+</script>
+{% endblock %}

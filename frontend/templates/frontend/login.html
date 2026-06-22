@@ -1,0 +1,56 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<div class="auth-wrap">
+<div class="row justify-content-center w-100">
+
+    <div class="col-md-4">
+
+        <div class="card form-card">
+        <div class="card-body">
+
+        <h2 class="page-title mb-4">Login</h2>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Username</label>
+                <input type="text"
+                       name="username"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="mb-3">
+                <label>Password</label>
+                <input type="password"
+                       name="password"
+                       class="form-control"
+                       required>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary w-100">
+                Login
+            </button>
+
+        </form>
+
+        </div>
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

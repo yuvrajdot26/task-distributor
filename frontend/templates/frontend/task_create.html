@@ -1,0 +1,99 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<h2 class="page-title">Add Task</h2>
+
+<div class="card form-card">
+<div class="card-body">
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Title</label>
+        <input
+            type="text"
+            name="title"
+            class="form-control"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <input
+            type="text"
+            name="description"
+            class="form-control"
+            required>
+    </div>
+
+    <div class="mb-3">
+
+        <label>Priority</label>
+
+        <select
+            name="priority"
+            class="form-control">
+
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+
+        </select>
+
+    </div>
+
+    <div class="mb-3">
+
+        <label>Required Skills</label>
+
+        <select
+            name="required_skills"
+            class="form-control">
+
+            <option value="BACKEND">Backend</option>
+            <option value="FRONTEND">Frontend</option>
+            <option value="TESTING">Testing</option>
+            <option value="DEVOPS">DevOps</option>
+
+        </select>
+
+    </div>
+
+    <div class="mb-3">
+        <label>Estimate Hours</label>
+        <input
+            type="number"
+            name="estimate_hours"
+            class="form-control"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label>Deadline</label>
+        <input
+            type="datetime-local"
+            name="deadline"
+            class="form-control">
+        <!-- removed required="false": that attribute always counts as "required"
+             in HTML regardless of its value, so it was forcing this field even
+             though you wanted it optional. Add the real `required` attribute back
+             here if you actually want it mandatory. -->
+    </div>
+
+    <button
+        type="submit"
+        class="btn btn-primary">
+
+        Save Task
+
+    </button>
+
+</form>
+
+</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="page-title mb-0">Tasks</h1>
+    <a href="{% url "task_create" %}" class="btn btn-primary">
+        + Create Task
+    </a>
+</div>
+<form method="GET" class="row mb-4">
+
+    <div class="col-md-4">
+        <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search Tasks..."
+            value="{{ request.GET.q }}">
+    </div>
+
+    <div class="col-md-3">
+        <select name="status" class="form-control">
+
+            <option value="">All Status</option>
+
+            <option value="PENDING"
+                {% if request.GET.status == "PENDING" %}selected{% endif %}>
+                Pending
+            </option>
+
+            <option value="IN_PROGRESS"
+                {% if request.GET.status == "IN_PROGRESS" %}selected{% endif %}>
+                In Progress
+            </option>
+
+            <option value="COMPLETED"
+                {% if request.GET.status == "COMPLETED" %}selected{% endif %}>
+                Completed
+            </option>
+
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="skill" class="form-control">
+
+            <option value="">All Skills</option>
+
+            <option value="BACKEND"
+                {% if request.GET.skill == "BACKEND" %}selected{% endif %}>
+                Backend
+            </option>
+
+            <option value="FRONTEND"
+                {% if request.GET.skill == "FRONTEND" %}selected{% endif %}>
+                Frontend
+            </option>
+
+            <option value="TESTING"
+                {% if request.GET.skill == "TESTING" %}selected{% endif %}>
+                Testing
+            </option>
+
+            <option value="DEVOPS"
+                {% if request.GET.skill == "DEVOPS" %}selected{% endif %}>
+                DevOps
+            </option>
+
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            Search
+        </button>
+    </div>
+
+</form>
+
+<div class="card data-card">
+<div class="card-body p-0">
+
+<table class="table table-bordered table-hover align-middle mb-0">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Required Skills</th>
+            <th>Assigned to</th>
+            <th>Actions</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for task in tasks %}
+
+        <tr>
+
+            <td>{{ tasks.start_index|add:forloop.counter0 }}</td>
+            <td>{{ task.title }}</td>
+
+            {% if task.priority == "HIGH" %}
+                <td>
+                    <span class="badge bg-danger">
+                        HIGH
+                    </span>
+                </td>
+            {% elif task.priority == "MEDIUM" %}
+                <td>
+                    <span class="badge bg-warning">
+                        MID
+                    </span>
+                </td>
+            {% else %}
+                <td>
+                    <span class="badge bg-success">
+                        LOW
+                    </span>
+                </td>
+            {% endif %}
+
+            {% if task.status == "PENDING" %}
+                <td>
+                    <span class="badge bg-secondary">
+                        Pending
+                    </span>
+                </td>
+
+            {% elif task.status == "IN_PROGRESS" %}
+                <td>
+                    <span class="badge bg-primary">
+                        In Progress
+                    </span>
+                </td>
+
+            {% else %}
+                <td>
+                    <span class="badge bg-success">
+                        Completed
+                    </span>
+                </td>
+
+            {% endif %}
+
+            <td>{{ task.required_skills }}</td>
+            <td>
+
+                {% if task.assign_to %}
+
+                    {{ task.assign_to.full_name }}
+
+                {% else %}
+
+                    <span class="text-muted-soft">Unassigned</span>
+
+                {% endif %}
+
+            </td>
+            <td class="text-nowrap">
+
+                <a href="{% url "task_edit" task.id %}" class="btn btn-warning btn-sm">
+                    Edit
+                </a>
+
+                <a href="{% url "task_delete" task.id %}" class="btn btn-danger btn-sm">
+                    Delete
+                </a>
+
+            {% if not task.assign_to %}
+                <a href="{% url "task_assign" task.id %}" class="btn btn-primary btn-sm">
+                    Assign
+                </a>
+            {% endif %}
+
+            {% if task.assign_to and task.status != "COMPLETED" %}
+                <a href="{% url "task_complete" task.id %}" class="btn btn-success btn-sm">
+                    Complete
+                </a>
+            {% endif %}
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="7" class="empty-row">No tasks yet — create one to get started.</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+</div>
+<div class="d-flex justify-content-center mt-4">
+
+    <nav>
+        <ul class="pagination">
+
+            {% if tasks.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ tasks.previous_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&skill={{ request.GET.skill }}">
+                        Previous
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    {{ tasks.number }}
+                </span>
+            </li>
+
+            {% if tasks.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ tasks.next_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&skill={{ request.GET.skill }}">
+                        Next
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+</div>
+{% endblock %}

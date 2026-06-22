@@ -1,0 +1,117 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+<h2 class="page-title">Edit Task</h2>
+
+<div class="card form-card">
+<div class="card-body">
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Title</label>
+        <input
+            type="text"
+            name="title"
+            class="form-control"
+            value="{{ task.title }}"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea
+            name="description"
+            class="form-control">{{ task.description }}</textarea>
+    </div>
+
+    <div class="mb-3">
+
+        <label>Priority</label>
+
+        <select
+            name="priority"
+            class="form-control">
+
+            <option value="LOW"
+            {% if task.priority == "LOW" %}selected{% endif %}>LOW
+            </option>
+            <option value="MEDIUM"
+            {% if task.priority == "MEDIUM" %}selected{% endif %}>MEDIUM
+            </option>
+            <option value="HIGH"
+            {% if task.priority == "HIGH" %}selected{% endif %}>HIGH
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="mb-3">
+
+        <label>Required Skills</label>
+
+        <select
+            name="required_skills"
+            class="form-control">
+
+            <option value="BACKEND"
+                {% if task.required_skills == "BACKEND" %}selected{% endif %}>
+                Backend
+            </option>
+
+            <option value="FRONTEND"
+                {% if task.required_skills == "FRONTEND" %}selected{% endif %}>
+                Frontend
+            </option>
+
+            <option value="TESTING"
+                {% if task.required_skills == "TESTING" %}selected{% endif %}>
+                Testing
+            </option>
+
+            <option value="DEVOPS"
+                {% if task.required_skills == "DEVOPS" %}selected{% endif %}>
+                DevOps
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="mb-3">
+        <label>Estimate Hours</label>
+        <input
+            type="number"
+            name="estimate_hours"
+            class="form-control"
+            value="{{ task.estimate_hours }}"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label>Deadline</label>
+        <input
+            type="datetime-local"
+            name="deadline"
+            class="form-control"
+            value="{{ task.deadline|date:'Y-m-d\\TH:i' }}">
+    </div>
+
+    <button
+        type="submit"
+        class="btn btn-primary">
+
+        Save Task
+
+    </button>
+
+</form>
+
+</div>
+</div>
+
+{% endblock %}
