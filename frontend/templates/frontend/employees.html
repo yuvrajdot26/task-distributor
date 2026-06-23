@@ -8,36 +8,26 @@
         + Add Employee
     </a>
 </div>
-<form method="GET" class="mb-4">
 
-    <div class="row">
+<form method="GET" class="row mb-4">
 
-        <div class="col-md-10">
+    <div class="col-md-10">
+        <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search by name or email..."
+            value="{{ request.GET.q }}">
+    </div>
 
-            <input
-                type="text"
-                name="q"
-                class="form-control"
-                placeholder="Search by employee or email..."
-                value="{{ request.GET.q }}">
-
-        </div>
-
-        <div class="col-md-2">
-
-            <button
-                type="submit"
-                class="btn btn-primary w-100">
-
-                Search
-
-            </button>
-
-        </div>
-
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            Search
+        </button>
     </div>
 
 </form>
+
 <div class="card data-card">
 <div class="card-body p-0">
 
@@ -64,12 +54,12 @@
 
         <tr>
 
-            <td>{{ employees.start_index|add:forloop.counter0 }}</td>
+            <td>{{ forloop.counter }}</td>
             <td>{{ employee.full_name }}</td>
             <td>{{ employee.email }}</td>
             <td>{{ employee.skills }}</td>
             <td>{{ employee.experience_level }}</td>
-            {% if employee.availbility %}
+            {% if employee.current_task_count < 5 %}
             <td>
                 <span class="badge bg-success">
                     Available
@@ -140,6 +130,5 @@
     </nav>
 
 </div>
-
 
 {% endblock %}

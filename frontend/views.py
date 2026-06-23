@@ -4,8 +4,10 @@ from distributor.models import Employee,Task,AssignmentHistory
 from django.utils import timezone
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q,F
 from django.core.paginator import Paginator
+
+MAX_TASKS_PER_EMPLOYEE = 5  # shared threshold used by dashboard + assignment logic
 
 # Create your views here.
 @login_required
@@ -14,7 +16,7 @@ def dashboard(request):
     context = {
     "total_employees": Employee.objects.count(),
     "available_employees": Employee.objects.filter(
-        availbility=True
+        current_task_count__lt=MAX_TASKS_PER_EMPLOYEE
     ).count(),
 
     "total_tasks": Task.objects.count(),
@@ -65,8 +67,9 @@ def dashboard(request):
 @login_required
 def employees(request):
 
-    employees = Employee.objects.all()
-    
+    # explicit ordering so pagination is stable across requests
+    employees = Employee.objects.all().order_by("id")
+
     query = request.GET.get("q")
 
     if query:
@@ -87,7 +90,8 @@ def employees(request):
 @login_required
 def tasks(request):
 
-    tasks = Task.objects.all()
+    # explicit ordering so pagination is stable across requests
+    tasks = Task.objects.all().order_by("-created_at")
 
     query = request.GET.get("q")
     status_filter = request.GET.get("status")
@@ -119,12 +123,16 @@ def tasks(request):
 @login_required
 def history(request):
 
-    history_records = AssignmentHistory.objects.all()
+    # explicit ordering so pagination is stable across requests
+    history_records = AssignmentHistory.objects.all().order_by("-assigned_at")
 
     query = request.GET.get("q")
     if query:
         history_records=history_records.filter(
-            Q(task__title__icontains=query )|Q(Employee__full_name__icontains=query)
+            # NOTE: was "Employee__full_name__icontains" (capital E) — the FK
+            # field is named "employee" (lowercase), so this used to raise
+            # FieldError on every search that reached this branch.
+            Q(task__title__icontains=query) | Q(employee__full_name__icontains=query)
         )
 
     paginator = Paginator(history_records,12)
@@ -212,18 +220,23 @@ def task_delete(request,pk):
     task.delete()
 
     return redirect("/tasks/")
-@login_required
-def assign_task(request,pk):
 
-    task = Task.objects.get(id=pk)
+@login_required
+def assign_task(request, pk):
+
+    # was Task.objects.get(id=pk) — raised an unhandled 500 on a bad/stale id
+    task = get_object_or_404(Task, id=pk)
 
     if task.assign_to:
         return redirect("/tasks/")
-    
-    employee = Employee.objects.filter(
+
+    # only employees under the per-person task cap
+    employees = Employee.objects.filter(
         skills=task.required_skills,
-        availbility=True
-    ).order_by("current_task_count").first()
+        current_task_count__lt=MAX_TASKS_PER_EMPLOYEE
+    ).order_by("current_task_count", "id")
+
+    employee = employees.first()
 
     if employee:
 
@@ -231,22 +244,22 @@ def assign_task(request,pk):
         task.status = Task.StatusChoice.IN_PROGRESS
         task.save()
 
-        employee.current_task_count +=1
-
-        if employee.current_task_count>0:
-            employee.availbility=False
-
-        employee.save()
+        Employee.objects.filter(id=employee.id).update(
+        current_task_count=F('current_task_count') + 1
+        )
 
         AssignmentHistory.objects.create(
             task=task,
             employee=employee
         )
+
     return redirect("/tasks/")
+
 @login_required
 def complete_task(request, pk):
 
-    task = Task.objects.get(id=pk)
+    # was Task.objects.get(id=pk) — raised an unhandled 500 on a bad/stale id
+    task = get_object_or_404(Task, id=pk)
 
     if task.status == Task.StatusChoice.COMPLETED:
         return redirect("/tasks/")
@@ -258,13 +271,15 @@ def complete_task(request, pk):
 
     if employee:
 
-        if employee.current_task_count > 0:
-            employee.current_task_count -= 1
+        Employee.objects.filter(id=employee.id).update(
+            current_task_count=F('current_task_count') - 1
+        )
 
-        if employee.current_task_count == 0:
-            employee.availbility = True
+        employee.refresh_from_db()
 
-        employee.save()
+        if employee.current_task_count < 0:
+            employee.current_task_count = 0
+            employee.save()
 
         history = AssignmentHistory.objects.filter(
             task=task,
@@ -279,7 +294,8 @@ def complete_task(request, pk):
 
 @login_required
 def history_delete(request,pk):
-    history = AssignmentHistory.objects.get(id=pk)
+    # was AssignmentHistory.objects.get(id=pk) — raised an unhandled 500 on a bad/stale id
+    history = get_object_or_404(AssignmentHistory, id=pk)
 
     history.delete()
 
@@ -288,7 +304,7 @@ def history_delete(request,pk):
 @login_required
 def workload(request):
 
-    employees = Employee.objects.all()
+    employees = Employee.objects.all().order_by("id")
 
     return render(
         request,

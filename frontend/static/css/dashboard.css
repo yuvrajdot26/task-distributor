@@ -407,32 +407,32 @@ input[type="checkbox"]{
 
 .text-muted-soft{ color:var(--text-faint); font-style:italic; }
 
-/* ============================================
-   PAGINATION
-   ============================================ */
-
-.pagination .page-link{
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin: 0 4px;
-    box-shadow: var(--shadow-sm);
+/* ==================================================================
+   PAGINATION — theme Bootstrap's pagination component to match
+   the accent color used everywhere else, instead of default blue
+   ================================================================== */
+.pagination{ gap:6px; }
+.page-link{
+    background:var(--surface);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px !important;
+    font-weight:600;
+    font-size:.86rem;
+    padding:.45rem .9rem;
 }
-
-.pagination .page-link:hover{
-    background: rgba(var(--accent-rgb), .12);
-    color: var(--accent);
-    border-color: rgba(var(--accent-rgb), .25);
+.page-link:hover{
+    background:var(--slate-soft);
+    color:var(--text);
+    border-color:var(--border);
 }
-
-.pagination .active .page-link{
-    background: var(--accent) !important;
-    border-color: var(--accent) !important;
-    color: white !important;
+.page-item.active .page-link{
+    background:var(--accent) !important;
+    border-color:var(--accent) !important;
+    color:#fff !important;
 }
-
-.pagination .page-item.disabled .page-link{
-    background: var(--surface);
-    color: var(--text-faint);
+.page-item.disabled .page-link{
+    background:var(--surface);
+    color:var(--text-faint);
+    border-color:var(--border);
 }
