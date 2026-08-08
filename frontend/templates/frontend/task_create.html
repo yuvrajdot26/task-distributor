@@ -76,11 +76,8 @@
         <input
             type="datetime-local"
             name="deadline"
-            class="form-control">
-        <!-- removed required="false": that attribute always counts as "required"
-             in HTML regardless of its value, so it was forcing this field even
-             though you wanted it optional. Add the real `required` attribute back
-             here if you actually want it mandatory. -->
+            class="form-control"
+            required = "false">
     </div>
 
     <button
