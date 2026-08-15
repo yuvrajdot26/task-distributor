@@ -22,54 +22,13 @@
 
     <div class="mb-3">
         <label>Description</label>
-        <input
+        <textarea
             type="text"
             name="description"
             class="form-control"
-            required>
+            required></textarea>
     </div>
 
-    <div class="mb-3">
-
-        <label>Priority</label>
-
-        <select
-            name="priority"
-            class="form-control">
-
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
-
-        </select>
-
-    </div>
-
-    <div class="mb-3">
-
-        <label>Required Skills</label>
-
-        <select
-            name="required_skills"
-            class="form-control">
-
-            <option value="BACKEND">Backend</option>
-            <option value="FRONTEND">Frontend</option>
-            <option value="TESTING">Testing</option>
-            <option value="DEVOPS">DevOps</option>
-
-        </select>
-
-    </div>
-
-    <div class="mb-3">
-        <label>Estimate Hours</label>
-        <input
-            type="number"
-            name="estimate_hours"
-            class="form-control"
-            required>
-    </div>
 
     <div class="mb-3">
         <label>Deadline</label>
@@ -77,7 +36,7 @@
             type="datetime-local"
             name="deadline"
             class="form-control"
-            required = "false">
+        >
     </div>
 
     <button

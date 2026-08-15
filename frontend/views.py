@@ -6,6 +6,7 @@ from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q,F
 from django.core.paginator import Paginator
+from distributor.services.ai_task_analyzer import analyze_task
 
 MAX_TASKS_PER_EMPLOYEE = 5  # shared threshold used by dashboard + assignment logic
 
@@ -184,34 +185,47 @@ def employee_delete(request,pk):
 def task_create(request):
 
     if request.method == "POST":
-        Task.objects.create(
-            title=request.POST.get("title"),
-            description=request.POST.get("description"),
-            priority=request.POST.get("priority"),
-            required_skills=request.POST.get("required_skills"),
-            estimate_hours=request.POST.get("estimate_hours"),
-            deadline=request.POST.get("deadline")
-        )
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        deadline = request.POST.get("deadline")
+
+        try:
+            ai_analyzer = analyze_task(title,description)
+
+            Task.objects.create(
+                title=title,
+                description=description,
+                priority=ai_analyzer["priority"],
+                required_skills=ai_analyzer["required_skills"],
+                estimate_hours=ai_analyzer["estimate_hours"],
+                deadline=deadline if deadline else None
+            )
+        except Exception as e :
+            return render(
+                request,
+                "frontend/task_create.html",
+                {"error":f"AI analysis failed: {str(e)}"}
+            )
 
         return redirect("/tasks/")
     return render(request,"frontend/task_create.html") 
-@login_required
-def task_edit(request,pk):
+# @login_required
+# def task_edit(request,pk):
 
-    task = get_object_or_404(Task,id=pk)
+#     task = get_object_or_404(Task,id=pk)
 
-    if request.method=="POST":
-        task.title=request.POST.get("title")
-        task.description=request.POST.get("description")
-        task.priority=request.POST.get("priority")
-        task.required_skills=request.POST.get("required_skills")
-        task.estimate_hours=request.POST.get("estimate_hours")
-        task.deadline=request.POST.get("deadline")
+#     if request.method=="POST":
+#         task.title=request.POST.get("title")
+#         task.description=request.POST.get("description")
+#         task.priority=request.POST.get("priority")
+#         task.required_skills=request.POST.get("required_skills")
+#         task.estimate_hours=request.POST.get("estimate_hours")
+#         task.deadline=request.POST.get("deadline")
 
-        task.save()
+#         task.save()
 
-        return redirect("/tasks/")
-    return render(request,"frontend/task_edit.html",{"task":task})
+#         return redirect("/tasks/")
+#     return render(request,"frontend/task_edit.html",{"task":task})
 @login_required
 def task_delete(request,pk):
 

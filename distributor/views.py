@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from django.utils import timezone
+from distributor.services.ai_task_analyzer import analyze_task
 
 # from django.shortcuts import render
 from .serializer import EmployeeSerializer,TaskSerializer,AssignmentHistorySerializer
@@ -146,8 +147,31 @@ class TaskListView(APIView):
     
     def post(self,request):
 
+        data = request.data.copy()
+        title = data.get("title")
+        description = data.get("description")
+
+        if not title or not description:
+            return Response(
+            {"error":"Title and description is required"},
+            status=status.HTTP_400_BAD_REQUEST)
+
+        try :
+            ai_result = analyze_task(title,description)
+        except Exception as e :
+            return Response(
+                {
+                 "error":"AI analysis failed",
+                 "details":str(e)   
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        data["required_skills"] = ai_result["required_skills"]
+        data["priority"] = ai_result["priority"]
+        data["estimate_hours"] = ai_result["estimate_hours"]
+
         serializer = TaskSerializer(
-            data = request.data
+            data=data
         )
         if serializer.is_valid():
             serializer.save()
@@ -156,6 +180,7 @@ class TaskListView(APIView):
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
+
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
@@ -222,7 +247,6 @@ class AutoAssignTaskView(APIView):
     
     def post(self,request,pk,):
         
-
         try:
             task = Task.objects.get(id=pk)
         

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+GROQ_API_KEY = config("GROQ_API_KEY")
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
