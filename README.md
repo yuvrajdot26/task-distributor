@@ -75,6 +75,19 @@ A Django-based AI-powered Task Distribution System that intelligently manages em
 
 ---
 
+### AI Integration
+
+The project integrates the Groq API to add AI-powered task analysis.
+When a user creates a task, they provide only the title and description. The AI analyzes the task and automatically determines:
+
+* Required Skill
+* Priority
+* Estimated Hours
+
+This information is then used by the Task Distributor's assignment system to find the most suitable employee based on their skills, availability, and current workload.
+
+---
+
 ## Tech Stack
 
 ### Backend
@@ -82,6 +95,11 @@ A Django-based AI-powered Task Distribution System that intelligently manages em
 * Python
 * Django
 * Django ORM
+
+### AI
+
+* Groq API
+* LLM-based Task Classification
 
 ### Database
 
