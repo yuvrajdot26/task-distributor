@@ -1,6 +1,6 @@
-# Task Distributor
+# AI Powered Task Distributor
 
-A Django-based Task Distribution System that intelligently manages employees, assigns tasks based on skills and workload, tracks assignment history, and provides workload analytics through a modern dashboard.
+A Django-based AI-powered Task Distribution System that intelligently manages employees, creates and assigns tasks based on skills and workload, tracks assignment history, and provides workload analytics through a modern dashboard.
 
 ## Features
 
@@ -10,6 +10,16 @@ A Django-based Task Distribution System that intelligently manages employees, as
 * Track employee skills and experience levels
 * Monitor employee availability
 * View current task counts per employee
+
+### AI-Powered Task Creation
+
+* Create tasks using only a task title and description
+* Uses the Groq API to analyze task requirements
+* AI automatically determines:
+  * Required skills
+  * Task priority (Low, Medium, High)
+  * Estimated completion hours
+* Reduces manual task configuration and improves task classification
 
 ### Task Management
 
